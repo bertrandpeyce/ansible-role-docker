@@ -1,0 +1,24 @@
+  - name: Ajouter la clé GPG de Docker
+    ansible.builtin.get_url:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      dest: /etc/apt/keyrings/docker.asc
+      mode: '0644'
+  - name: Add repository to apt source
+    ansible.builtin.apt_repository:
+      repo: "deb [arch={{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_facts['lsb']['codename'] }} stable"
+      state: present
+  - name: Update package list
+    ansible.builtin.apt:
+      update_cache: yes
+  - name: Install Docker packages
+    ansible.builtin.apt:
+      pkg:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
+  - name: Ensuire docker group is present
+    ansible.builtin.group:
+      name: docker
+      state: present
